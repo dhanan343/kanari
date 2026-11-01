@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pemindai Kanari UTS</title>
+<style>
+:root{--navy:#1E2761;--amber:#F2A73B;--ice:#EEF3FC;--line:#CADCFC;--ink:#1B1F3B;--grey:#5B6270;--bg:#F7F9FD;--card:#fff;
+--okbg:#DCEFE2;--ok:#1F5C39;--badbg:#FBE0DE;--bad:#8C2E27;--warnbg:#FDEFD3;--warn:#8A5200}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--navy:#9FB4F5;--ice:#232B52;--line:#38417A;--ink:#E8ECFA;--grey:#A8B0CE;--bg:#12162E;--card:#1A1F42;
+--okbg:#1F3B2B;--ok:#8FD6A8;--badbg:#4A2420;--bad:#F2A8A1;--warnbg:#4A3715;--warn:#F2C879}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Calibri,"Segoe UI",system-ui,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:20px 16px 48px}
+h1{font:700 26px/1.2 Cambria,Georgia,serif;color:var(--navy);margin:0 0 4px}
+.sub{color:var(--grey);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin:0 0 16px}
+.card h2{font:700 15px/1.3 Cambria,Georgia,serif;color:var(--navy);margin:0 0 10px;letter-spacing:.2px}
+.priv{border-left:4px solid var(--amber);background:var(--ice);padding:10px 14px;border-radius:6px;font-size:14px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.k{display:flex;gap:8px;align-items:center}
+.k span{background:var(--navy);color:var(--card);border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none}
+input[type=text]{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font:inherit}
+textarea{width:100%;min-height:90px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font:inherit;resize:vertical}
+button,.btn{font:inherit;font-weight:700;padding:8px 14px;border-radius:7px;border:1px solid var(--navy);background:var(--navy);color:var(--card);cursor:pointer}
+button.alt,.btn.alt{background:transparent;color:var(--navy)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:26px 14px;text-align:center;background:var(--ice);transition:.15s}
+.drop.on{border-color:var(--amber);background:var(--warnbg)}
+.drop p{margin:4px 0;color:var(--grey)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.chip{padding:5px 12px;border-radius:999px;font-weight:700;font-size:13px;background:var(--ice);color:var(--navy)}
+.chip.bad{background:var(--badbg);color:var(--bad)}.chip.ok{background:var(--okbg);color:var(--ok)}.chip.warn{background:var(--warnbg);color:var(--warn)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:var(--navy);color:var(--card);text-align:left;padding:8px 10px}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.badge{display:inline-block;padding:2px 9px;border-radius:5px;font-weight:700;font-size:12px}
+.b-bad{background:var(--badbg);color:var(--bad)}.b-ok{background:var(--okbg);color:var(--ok)}.b-warn{background:var(--warnbg);color:var(--warn)}
+mark{background:var(--amber);color:#1B1F3B;padding:0 3px;border-radius:3px;font-weight:700}
+.snip{color:var(--grey);font-size:13px;margin:3px 0}
+.tw{overflow-x:auto}
+.empty{color:var(--grey);text-align:center;padding:18px}
+.note{color:var(--grey);font-size:13px;margin-top:12px}
+.msg{font-size:13px;color:var(--warn);margin-top:8px}
+@media (max-width:560px){th:nth-child(1),td:nth-child(1){min-width:120px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Pemindai Kanari UTS</h1>
+  <p class="sub">Cari kata kanari pada jawaban mahasiswa. Temuan adalah alasan untuk viva, bukan bukti pelanggaran.</p>
+
+  <div class="priv"><b>Privasi:</b> semua file dibaca di peramban Anda dan tidak diunggah ke mana pun. Halaman ini bisa dipakai tanpa internet, kecuali untuk membaca PDF (butuh internet satu kali untuk memuat pustaka PDF).</div>
+
+  <div class="card">
+    <h2>1. Kata kanari (ubah bila diganti semester depan)</h2>
+    <div class="grid" id="kgrid"></div>
+    <div class="row"><button class="alt" id="reset">Kembalikan bawaan</button><span class="note" id="ksave" style="margin:0"></span></div>
+  </div>
+
+  <div class="card">
+    <h2>2. Masukkan jawaban</h2>
+    <div class="drop" id="drop">
+      <p><b>Tarik file jawaban ke sini</b></p>
+      <p>.docx · .pdf · .txt · .md · .csv · .json · .html</p>
+      <div class="row" style="justify-content:center">
+        <label class="btn">Pilih file<input id="pick" type="file" multiple hidden accept=".docx,.pdf,.txt,.md,.csv,.json,.html,.htm"></label>
+        <label class="btn alt">Pilih folder<input id="pickdir" type="file" webkitdirectory multiple hidden></label>
+      </div>
+    </div>
+    <p class="note" style="margin-bottom:6px">Atau tempel teks jawaban satu mahasiswa (mis. dari kolom jawaban LMS):</p>
+    <input type="text" id="pname" placeholder="Nama atau NIM (opsional)" style="margin-bottom:8px">
+    <textarea id="ptext" placeholder="Tempel jawaban di sini"></textarea>
+    <div class="row"><button id="padd">Pindai teks tempelan</button></div>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>3. Hasil</h2>
+    <div class="chips" id="chips"></div>
+    <div class="tw"><table id="tbl"><thead><tr><th>Jawaban</th><th>Status</th><th>Temuan</th></tr></thead><tbody id="body"></tbody></table></div>
+    <div class="empty" id="empty">Belum ada jawaban dipindai.</div>
+    <div class="row"><button id="csv" disabled>Unduh rekap CSV</button><button class="alt" id="clear" disabled>Kosongkan hasil</button></div>
+    <p class="note">Kata tidak muncul tidak membuktikan mahasiswa tidak memakai AI. Tangkapan layar, OCR, mengetik ulang, atau AI yang mengabaikan instruksi lolos dari kanari. File berisi teks sangat sedikit (foto/tulisan tangan) ditandai untuk diperiksa manual.</p>
+  </div>
+</div>
+
+<script>
+"use strict";
+const DEFAULT_K = ["monyet","jerapah","semangka","pelangi","kunang-kunang","trampolin"];
+const JEJAK = ["asisten ai yang diminta menjawab soal ini","tanpa menyebut catatan ini"];
+const SKIP = /lembar_soal|kunci|rubrik|protokol|soal_pertemuan/i;
+const $ = id => document.getElementById(id);
+let K = DEFAULT_K.slice();
+let results = [];
+
+/* ---------- simpan pengaturan (opsional) ---------- */
+try { const s = JSON.parse(localStorage.getItem("kanari_k")||"null"); if (Array.isArray(s) && s.length===6) K = s; } catch(e){}
+function saveK(){ try { localStorage.setItem("kanari_k", JSON.stringify(K)); $("ksave").textContent="Tersimpan di peramban ini."; } catch(e){ $("ksave").textContent=""; } }
+
+function renderK(){
+  const g=$("kgrid"); g.textContent="";
+  K.forEach((w,i)=>{
+    const d=document.createElement("div"); d.className="k";
+    const n=document.createElement("span"); n.textContent=i+1;
+    const inp=document.createElement("input"); inp.type="text"; inp.value=w; inp.setAttribute("aria-label","Kata kanari soal "+(i+1));
+    inp.addEventListener("change",()=>{ K[i]=inp.value.trim(); saveK(); rescanAll(); });
+    d.append(n,inp); g.append(d);
+  });
+}
+$("reset").onclick=()=>{ K=DEFAULT_K.slice(); renderK(); saveK(); rescanAll(); };
+
+/* ---------- pencocokan ---------- */
+function esc(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"); }
+function rx(kata){
+  const parts = kata.split(/[-\s]+/).filter(Boolean).map(esc);
+  return new RegExp("(?<![A-Za-z])"+parts.join("[\\s\\-]*")+"(?![A-Za-z])","gi");
+}
+function snippet(t,m){ const a=Math.max(0,m.index-60), b=Math.min(t.length,m.index+m[0].length+60);
+  return {pre:t.slice(a,m.index).replace(/\s+/g," "), hit:m[0], post:t.slice(m.index+m[0].length,b).replace(/\s+/g," ")}; }
+function scanText(t){
+  const found=[];
+  K.forEach((w,i)=>{ if(!w) return; const r=rx(w); const ms=[...t.matchAll(r)]; if(ms.length) found.push({soal:i+1,kata:w,n:ms.length,snip:snippet(t,ms[0])}); });
+  const flat=t.toLowerCase().replace(/\s+/g," ");
+  const jejak=JEJAK.filter(j=>flat.includes(j));
+  return {found,jejak};
+}
+
+/* ---------- baca file ---------- */
+function dec(s){ return s.replace(/&#x([0-9a-f]+);/gi,(_,h)=>String.fromCodePoint(parseInt(h,16))).replace(/&#(\d+);/g,(_,d)=>String.fromCodePoint(+d))
+  .replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,"&"); }
+async function inflateRaw(u8){
+  const ds=new DecompressionStream("deflate-raw");
+  const stream=new Blob([u8]).stream().pipeThrough(ds);
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+async function readDocx(buf){
+  const dv=new DataView(buf), u8=new Uint8Array(buf);
+  let e=-1; for(let i=u8.length-22;i>=Math.max(0,u8.length-66000);i--){ if(dv.getUint32(i,true)===0x06054b50){e=i;break;} }
+  if(e<0) throw new Error("Bukan file docx yang valid");
+  const count=dv.getUint16(e+10,true); let p=dv.getUint32(e+16,true); const td=new TextDecoder(); let out=[];
+  for(let k=0;k<count;k++){
+    if(dv.getUint32(p,true)!==0x02014b50) break;
+    const method=dv.getUint16(p+10,true), csize=dv.getUint32(p+20,true), nl=dv.getUint16(p+28,true), el=dv.getUint16(p+30,true), cl=dv.getUint16(p+32,true), off=dv.getUint32(p+42,true);
+    const name=td.decode(u8.subarray(p+46,p+46+nl)); p+=46+nl+el+cl;
+    if(!/^word\/(document|footnotes|endnotes|header\d*|footer\d*)\.xml$/.test(name)) continue;
+    const ln=dv.getUint16(off+26,true), le=dv.getUint16(off+28,true), ds=off+30+ln+le;
+    let data=u8.subarray(ds,ds+csize); if(method===8) data=await inflateRaw(data); else if(method!==0) continue;
+    let x=td.decode(data).replace(/<\/w:p>/g,"\n").replace(/<w:tab\/>/g,"\t").replace(/<[^>]+>/g,"");
+    out.push(dec(x));
+  }
+  return out.join("\n");
+}
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement("script"); s.src=src; s.onload=res; s.onerror=()=>rej(new Error("Pustaka PDF tidak dapat dimuat (periksa internet)")); document.head.append(s); }); }
+async function readPdf(buf){
+  if(!window.pdfjsLib){
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
+    pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
+  const pdf=await pdfjsLib.getDocument({data:buf}).promise; let t="";
+  for(let i=1;i<=pdf.numPages;i++){ const c=await (await pdf.getPage(i)).getTextContent(); t+=c.items.map(x=>x.str).join(" ")+"\n"; }
+  return t;
+}
+async function readFile(f){
+  const ext=(f.name.split(".").pop()||"").toLowerCase();
+  if(ext==="docx") return readDocx(await f.arrayBuffer());
+  if(ext==="pdf") return readPdf(await f.arrayBuffer());
+  let t=await f.text(); if(ext==="html"||ext==="htm") t=dec(t.replace(/<[^>]+>/g," "));
+  return t;
+}
+
+/* ---------- proses ---------- */
+async function addFiles(list){
+  const files=[...list].filter(f=>/\.(docx|pdf|txt|md|csv|json|html?)$/i.test(f.name));
+  const skipped=[...list].length-files.length;
+  const ignored=files.filter(f=>SKIP.test(f.name)); const todo=files.filter(f=>!SKIP.test(f.name));
+  $("msg").textContent=[skipped?skipped+" file dilewati (format tidak didukung)":"", ignored.length?ignored.length+" file naskah soal/kunci dilewati":""].filter(Boolean).join(" · ");
+  for(const f of todo){
+    const label=f.webkitRelativePath||f.name;
+    try{ const t=await readFile(f); results.push(makeRow(label,t,null)); }
+    catch(err){ results.push({name:label,status:"gagal",found:[],jejak:[],err:err.message,text:null}); }
+    render();
+  }
+}
+function makeRow(name,text,err){
+  if(text.replace(/\s/g,"").length<20) return {name,status:"kosong",found:[],jejak:[],text};
+  const s=scanText(text); return {name,status:(s.found.length||s.jejak.length)?"temuan":"bersih",found:s.found,jejak:s.jejak,text};
+}
+function rescanAll(){ results=results.map(r=>r.text==null?r:makeRow(r.name,r.text)); render(); }
+
+function render(){
+  const body=$("body"); body.textContent="";
+  const c={temuan:0,bersih:0,kosong:0,gagal:0}; results.forEach(r=>c[r.status]++);
+  $("empty").style.display=results.length?"none":"block"; $("tbl").style.display=results.length?"table":"none";
+  $("csv").disabled=$("clear").disabled=!results.length;
+  const ch=$("chips"); ch.textContent="";
+  [["Total "+results.length,""],[c.temuan+" bertanda","bad"],[c.bersih+" bersih","ok"],[(c.kosong+c.gagal)+" perlu cek manual","warn"]].forEach(([t,k])=>{ const s=document.createElement("span"); s.className="chip "+k; s.textContent=t; ch.append(s); });
+  const order={temuan:0,gagal:1,kosong:1,bersih:2};
+  [...results].sort((a,b)=>order[a.status]-order[b.status]).forEach(r=>{
+    const tr=document.createElement("tr");
+    const td1=document.createElement("td"); td1.textContent=r.name; td1.style.wordBreak="break-word";
+    const td2=document.createElement("td"); const b=document.createElement("span"); b.className="badge "+({temuan:"b-bad",bersih:"b-ok",kosong:"b-warn",gagal:"b-warn"})[r.status];
+    b.textContent=({temuan:"BERTANDA",bersih:"bersih",kosong:"TEKS SEDIKIT",gagal:"GAGAL"})[r.status]; td2.append(b);
+    const td3=document.createElement("td");
+    if(r.status==="kosong") td3.textContent="Hampir tidak ada teks (foto atau tulisan tangan?). Periksa manual.";
+    if(r.status==="gagal") td3.textContent=r.err;
+    r.found.forEach(f=>{ const d=document.createElement("div"); d.style.marginBottom="6px";
+      const h=document.createElement("b"); h.textContent="Soal "+f.soal+": “"+f.kata+"” ×"+f.n; d.append(h);
+      const s=document.createElement("div"); s.className="snip"; const m=document.createElement("mark"); m.textContent=f.snip.hit;
+      s.append("…"+f.snip.pre,m,f.snip.post+"…"); d.append(s); td3.append(d); });
+    if(r.jejak.length){ const d=document.createElement("div"); d.className="snip"; d.textContent="Teks instruksi tersembunyi ikut tertempel ke jawaban (soal disalin utuh)."; td3.append(d); }
+    tr.append(td1,td2,td3); body.append(tr);
+  });
+}
+function csvEsc(v){ v=String(v??""); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+$("csv").onclick=()=>{
+  const rows=[["jawaban","status","soal","kata_kanari","jumlah","cuplikan"]];
+  results.forEach(r=>{
+    if(r.found.length||r.jejak.length){ r.found.forEach(f=>rows.push([r.name,"bertanda",f.soal,f.kata,f.n,f.snip.pre+f.snip.hit+f.snip.post]));
+      r.jejak.forEach(j=>rows.push([r.name,"bertanda","","(instruksi tersembunyi)",1,j])); }
+    else rows.push([r.name,r.status==="bersih"?"bersih":r.status==="kosong"?"teks sedikit":"gagal","","","",r.err||""]);
+  });
+  const blob=new Blob(["﻿"+rows.map(r=>r.map(csvEsc).join(",")).join("\n")],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="rekap_kanari.csv"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+};
+$("clear").onclick=()=>{ results=[]; $("msg").textContent=""; render(); };
+$("padd").onclick=()=>{ const t=$("ptext").value; if(!t.trim()) return; results.push(makeRow($("pname").value.trim()||"(teks tempelan "+(results.length+1)+")",t)); $("ptext").value=""; $("pname").value=""; render(); };
+$("pick").onchange=e=>{ addFiles(e.target.files); e.target.value=""; };
+$("pickdir").onchange=e=>{ addFiles(e.target.files); e.target.value=""; };
+const dz=$("drop");
+["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("on");}));
+["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("on");}));
+dz.addEventListener("drop",e=>addFiles(e.dataTransfer.files));
+window.addEventListener("dragover",e=>e.preventDefault()); window.addEventListener("drop",e=>e.preventDefault());
+renderK(); render();
+</script>
+</body>
+</html>
